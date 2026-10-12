@@ -1,69 +1,57 @@
+---
+title: Lite Music AI
+emoji: 🎵
+colorFrom: indigo
+colorTo: purple
+sdk: gradio
+sdk_version: 5.49.1
+python_version: 3.10.13
+app_file: app.py
+---
+
 # Lite Music AI 🎵
 
-A simple text-to-music app that runs the model on your own computer. It does not require a paid AI provider or API key.
+A text-to-music demo using Meta's MusicGen Small model. This repository is configured for **Hugging Face Spaces with ZeroGPU**, so visitors can use the interface in a browser without installing Python locally.
 
-## What it does
+## Deploy it online
 
-- Turns a text description into a short music clip.
-- Offers 5-, 8-, and 10-second generation lengths.
-- Runs locally using Meta's MusicGen Small model.
-- Uses Gradio for a simple browser interface.
+1. Sign in to Hugging Face at https://huggingface.co/.
+2. Create a new Space at https://huggingface.co/new-space.
+3. Name it lite-music-ai (or another available name), choose **Gradio**, set visibility to **Public**, and select **ZeroGPU** hardware if your account is eligible.
+4. Once the Space is created, open its **Files** tab and upload these three files from this GitHub repository: app.py, requirements.txt, and README.md. You can view each file in this repository and copy/download its contents in your browser; no local Python installation is needed.
+5. Wait for the Space to build. The model downloads automatically on its first startup. When the Space shows **Running**, open the app tab and generate a short clip.
 
-## Requirements
+**Important:** Hugging Face's free hosting rules can change. Free personal accounts must meet Hugging Face's eligibility requirements to host ZeroGPU Spaces. If ZeroGPU is not offered for your account, do not choose paid hardware; pause here and check the current options at https://huggingface.co/docs/hub/spaces-zerogpu.
 
-- Windows 10/11, macOS, or Linux.
-- Python 3.10 or 3.11 recommended.
-- Internet for the first model download.
-- Several GB of free disk space and RAM. A compatible NVIDIA GPU helps a lot; CPU generation may be very slow.
+## Using the app
 
-**Laptop note:** on a lower-powered computer such as an older office laptop, the model may be slow or run out of memory. Start with the 5-second option and close other applications.
+1. Enter a music description.
+2. Choose 5, 8, or 10 seconds.
+3. Click **Generate music** and wait for the audio result.
 
-## Run on Windows
+## Requirements and limits
 
-1. Install Python 3.10 or 3.11 from https://www.python.org/downloads/. During installation, enable **Add Python to PATH**.
-2. Download this repository using GitHub's **Code → Download ZIP**, then extract it.
-3. Open the extracted lite-music-ai folder in File Explorer.
-4. Click the address bar, type cmd, and press Enter.
-5. Create and activate a virtual environment:
+- You only need a web browser on your own computer; the hosted Space runs the Python app.
+- The first startup needs to download the model and Python packages.
+- Free GPU capacity can queue, pause, or have daily usage limits.
+- Model startup and generation can take time.
 
-   ```bat
-   py -3.11 -m venv .venv
-   .venv\\Scripts\\activate
-   python -m pip install --upgrade pip
-   ```
+## Model license
 
-6. Install dependencies:
+This app uses facebook/musicgen-small. The model's published license is **CC-BY-NC 4.0 (non-commercial use only)**. Review the [model card](https://huggingface.co/facebook/musicgen-small) and license before using the model or its outputs. Do not use it commercially unless you have confirmed you have the rights to do so. Also consider copyright and platform rules when writing prompts or publishing generated audio.
 
-   ```bat
-   pip install -r requirements.txt
-   ```
+## Privacy
 
-   If PyTorch installation fails or you want GPU acceleration, follow the current instructions at https://pytorch.org/get-started/locally/.
-
-7. Start the app:
-
-   ```bat
-   python app.py
-   ```
-
-8. Wait for the first model download, then open http://127.0.0.1:7860 if it does not open automatically.
-9. Enter a music description, choose a duration, and click **Generate music**.
-
-## Important model license
-
-This app uses facebook/musicgen-small. The model's published license is **CC-BY-NC 4.0 (non-commercial use only)**. Review the model card at https://huggingface.co/facebook/musicgen-small and its license terms before using the model or its outputs. Do not use it for commercial purposes unless you have confirmed you have the rights to do so. Also consider copyright and platform rules when writing prompts or publishing generated audio.
-
-## Privacy and network use
-
-The app runs on your computer. The first run needs internet to download the model and Python packages. Once the model is cached, music generation itself runs locally; this app does not send prompts to a paid AI-provider API.
+The app runs on the hosted Space. Your prompt is processed by that hosting service and model; this is not a fully offline/private local app. Avoid entering personal or sensitive information.
 
 ## Troubleshooting
 
-- **Very slow:** CPU generation can take a long time. Try 5 seconds, wait, and check system memory.
-- **Out of memory:** close other programs and retry with a shorter clip. If it still fails, the computer may not be powerful enough for this model.
-- **Download/install error:** check your internet connection and retry the failed command.
-- **Port already in use:** close the other app using port 7860 or change server_port=7860 near the bottom of app.py.
+- **Build error:** open the Space's **Logs** tab and inspect the first error.
+- **Space sleeps or queues:** wait for it to wake or try again later; free capacity is shared.
+- **Out of memory or GPU time limit:** try a 5-second clip.
+- **Model download error:** retry after checking the Space's build/runtime logs.
 
-## License
+## Code
 
-The code in this repository is provided as-is. The MusicGen model has its own license and usage conditions; see the model card linked above.
+- app.py: Gradio interface and music generation.
+- requirements.txt: Python dependencies.
