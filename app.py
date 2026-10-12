@@ -1,4 +1,5 @@
-import os
+import spaces  # Import before torch for Hugging Face ZeroGPU compatibility.
+
 import tempfile
 import traceback
 
@@ -9,44 +10,41 @@ from scipy.io.wavfile import write as write_wav
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 
 MODEL_ID = "facebook/musicgen-small"
-processor = None
-model = None
-device = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# Load once at startup so the model is ready when ZeroGPU allocates the GPU.
+processor = AutoProcessor.from_pretrained(MODEL_ID)
+model = MusicgenForConditionalGeneration.from_pretrained(MODEL_ID).to(DEVICE)
+model.eval()
 
 
-def load_model():
-    global processor, model
-    if model is None:
-        processor = AutoProcessor.from_pretrained(MODEL_ID)
-        model = MusicgenForConditionalGeneration.from_pretrained(MODEL_ID)
-        model.to(device)
-        model.eval()
-    return processor, model
-
-
+@spaces.GPU(duration=120)
 def generate_music(prompt, seconds, progress=gr.Progress()):
     prompt = (prompt or "").strip()
     if not prompt:
         raise gr.Error("Please describe the music you want to create.")
+
     try:
-        progress(0.05, desc="Loading the local AI model (first run downloads it)...")
-        current_processor, current_model = load_model()
-        progress(0.2, desc="Preparing your prompt...")
-        inputs = current_processor(text=[prompt], padding=True, return_tensors="pt")
-        inputs = {key: value.to(device) for key, value in inputs.items()}
-        max_new_tokens = int(seconds) * 50
-        progress(0.3, desc=f"Generating on {device.upper()}...")
+        progress(0.1, desc="Preparing your prompt...")
+        inputs = processor(text=[prompt], padding=True, return_tensors="pt")
+        inputs = {key: value.to(DEVICE) for key, value in inputs.items()}
+
+        progress(0.25, desc=f"Generating music on {DEVICE.upper()}...")
         with torch.inference_mode():
-            audio_values = current_model.generate(
-                **inputs, max_new_tokens=max_new_tokens,
-                do_sample=True, guidance_scale=3.0,
+            audio_values = model.generate(
+                **inputs,
+                max_new_tokens=int(seconds) * 50,
+                do_sample=True,
+                guidance_scale=3.0,
             )
+
         audio = audio_values[0].detach().float().cpu().numpy()
         if audio.ndim == 2:
             audio = audio.T
         audio = np.clip(audio, -1.0, 1.0)
         audio_int16 = (audio * 32767).astype(np.int16)
-        sample_rate = int(current_model.config.audio_encoder.sampling_rate)
+        sample_rate = int(model.config.audio_encoder.sampling_rate)
+
         handle = tempfile.NamedTemporaryFile(prefix="lite_music_ai_", suffix=".wav", delete=False)
         output_path = handle.name
         handle.close()
@@ -58,20 +56,19 @@ def generate_music(prompt, seconds, progress=gr.Progress()):
     except Exception as exc:
         traceback.print_exc()
         raise gr.Error(
-            "Music generation failed. Check available RAM/disk space and whether the "
-            "first model download completed. Details: " + str(exc)
+            "Generation failed. Try a shorter clip or wait and retry. Details: " + str(exc)
         ) from exc
 
 
 with gr.Blocks(title="Lite Music AI", theme=gr.themes.Soft()) as demo:
     gr.Markdown(
         "# 🎵 Lite Music AI\n"
-        "Create music from a text description using an open model running on your own computer. "
-        "No paid AI-provider API key is required."
+        "Create a short music clip from a text description. The model runs on hosted compute; "
+        "you do not need to install Python on your computer."
     )
     gr.Markdown(
-        "**First run:** the model downloads from Hugging Face and needs internet. "
-        "After it is cached, generation runs locally. CPU generation can be very slow."
+        "**Free hosting note:** this app is configured for Hugging Face ZeroGPU. "
+        "Availability and free GPU quotas depend on your Hugging Face account and platform limits."
     )
     with gr.Row():
         with gr.Column():
@@ -91,13 +88,13 @@ with gr.Blocks(title="Lite Music AI", theme=gr.themes.Soft()) as demo:
             output = gr.Audio(label="Your generated music", type="filepath")
     generate.click(fn=generate_music, inputs=[prompt, duration], outputs=output)
     gr.Markdown(
-        "### Important\n"
+        "### Model and usage\n"
         "This app uses Meta's MusicGen Small model (facebook/musicgen-small). "
-        "Check its model card and license before use. The model is licensed for "
-        "**non-commercial use only**; do not use generated results commercially unless "
-        "you have verified that you have the necessary rights.\n\n"
-        "This is a local demo, not a hosted music-generation website. Your computer does the work."
+        "Its published license is **CC-BY-NC 4.0 (non-commercial use only)**. "
+        "Review the [model card](https://huggingface.co/facebook/musicgen-small) and license "
+        "before publishing or using generated audio. Do not use it commercially unless you "
+        "have verified you have the necessary rights."
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="127.0.0.1", server_port=7860, inbrowser=True)
+    demo.launch()
