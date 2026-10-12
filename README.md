@@ -1,57 +1,38 @@
----
-title: Lite Music AI
-emoji: 🎵
-colorFrom: indigo
-colorTo: purple
-sdk: gradio
-sdk_version: 5.49.1
-python_version: 3.10.13
-app_file: app.py
----
-
 # Lite Music AI 🎵
 
-A text-to-music demo using Meta's MusicGen Small model. This repository is configured for **Hugging Face Spaces with ZeroGPU**, so visitors can use the interface in a browser without installing Python locally.
+Lite Music AI is a fresh, browser-based music-making prototype published from this GitHub repository.
 
-## Deploy it online
+## Run it
 
-1. Sign in to Hugging Face at https://huggingface.co/.
-2. Create a new Space at https://huggingface.co/new-space.
-3. Name it lite-music-ai (or another available name), choose **Gradio**, set visibility to **Public**, and select **ZeroGPU** hardware if your account is eligible.
-4. Once the Space is created, open its **Files** tab and upload these three files from this GitHub repository: app.py, requirements.txt, and README.md. You can view each file in this repository and copy/download its contents in your browser; no local Python installation is needed.
-5. Wait for the Space to build. The model downloads automatically on its first startup. When the Space shows **Running**, open the app tab and generate a short clip.
+Open `index.html` in a modern browser, or publish the repository with GitHub Pages. The app uses the browser's Web Audio API to synthesize short instrumental patterns based on the words in your prompt. It does not upload prompts or require an API key.
 
-**Important:** Hugging Face's free hosting rules can change. Free personal accounts must meet Hugging Face's eligibility requirements to host ZeroGPU Spaces. If ZeroGPU is not offered for your account, do not choose paid hardware; pause here and check the current options at https://huggingface.co/docs/hub/spaces-zerogpu.
+## Publish with GitHub Pages
 
-## Using the app
+A GitHub Actions workflow is included at `.github/workflows/pages.yml`.
 
-1. Enter a music description.
-2. Choose 5, 8, or 10 seconds.
-3. Click **Generate music** and wait for the audio result.
+1. Open this repository on GitHub.
+2. Go to **Settings → Pages**.
+3. Under **Build and deployment**, choose **GitHub Actions** as the source.
+4. Open **Actions** and allow the workflow to finish.
+5. Your site should be published at `https://liteempire.github.io/lite-music-ai/`.
 
-## Requirements and limits
+If GitHub asks you to approve Pages permissions, follow the prompts shown in the repository settings.
 
-- You only need a web browser on your own computer; the hosted Space runs the Python app.
-- The first startup needs to download the model and Python packages.
-- Free GPU capacity can queue, pause, or have daily usage limits.
-- Model startup and generation can take time.
+## Important: what this version does
 
-## Model license
+This first version is a **prompt-driven procedural music prototype**, not a trained neural text-to-music model. It composes simple synthesized sounds in your browser using the selected style and keywords. GitHub Pages hosts static files; it does not provide the GPU/compute required to run a large AI music model.
 
-This app uses facebook/musicgen-small. The model's published license is **CC-BY-NC 4.0 (non-commercial use only)**. Review the [model card](https://huggingface.co/facebook/musicgen-small) and license before using the model or its outputs. Do not use it commercially unless you have confirmed you have the rights to do so. Also consider copyright and platform rules when writing prompts or publishing generated audio.
+A future true AI version will need a model plus an inference host or compatible browser-side model. Any host may have usage limits or require setup.
+
+## Files
+
+- `index.html` — complete responsive interface and browser audio composer.
+- `.github/workflows/pages.yml` — deploys the static site to GitHub Pages.
 
 ## Privacy
 
-The app runs on the hosted Space. Your prompt is processed by that hosting service and model; this is not a fully offline/private local app. Avoid entering personal or sensitive information.
+Audio is generated locally in the browser. This prototype does not send prompts to an external service.
 
-## Troubleshooting
+## License and model notes
 
-- **Build error:** open the Space's **Logs** tab and inspect the first error.
-- **Space sleeps or queues:** wait for it to wake or try again later; free capacity is shared.
-- **Out of memory or GPU time limit:** try a 5-second clip.
-- **Model download error:** retry after checking the Space's build/runtime logs.
-
-## Code
-
-- app.py: Gradio interface and music generation.
-- requirements.txt: Python dependencies.
+No pretrained music model is bundled in this prototype. If a model is added in a future version, its license and any restrictions must be reviewed before publishing or commercial use.
